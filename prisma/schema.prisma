@@ -1,0 +1,88 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model Contact {
+  id                    Int       @id @default(autoincrement())
+  name                  String
+  email                 String?
+  phone                 String?
+  company               String?
+  relationshipType      String    @default("acquaintance") @map("relationship_type")
+  notes                 String?
+  lastContactDate       DateTime? @map("last_contact_date")
+  followUpFrequencyDays Int?      @map("follow_up_frequency_days")
+  createdAt             DateTime  @default(now()) @map("created_at")
+  updatedAt             DateTime  @updatedAt @map("updated_at")
+  messages              Message[]
+  reminders             Reminder[]
+
+  @@map("contacts")
+}
+
+model Reminder {
+  id             Int      @id @default(autoincrement())
+  title          String
+  description    String?
+  dueAt          DateTime @map("due_at")
+  recurrenceRule String?  @map("recurrence_rule")
+  status         String   @default("pending")
+  contactId      Int?     @map("contact_id")
+  createdAt      DateTime @default(now()) @map("created_at")
+  contact        Contact? @relation(fields: [contactId], references: [id], onDelete: Cascade)
+
+  @@map("reminders")
+}
+
+model Message {
+  id              Int       @id @default(autoincrement())
+  contactId       Int       @map("contact_id")
+  subject         String?
+  body            String
+  channel         String    @default("email")
+  status          String    @default("draft")
+  scheduledSendAt DateTime? @map("scheduled_send_at")
+  createdAt       DateTime  @default(now()) @map("created_at")
+  updatedAt       DateTime  @updatedAt @map("updated_at")
+  contact         Contact   @relation(fields: [contactId], references: [id], onDelete: Cascade)
+
+  @@map("messages")
+}
+
+model Conversation {
+  id        Int                @id @default(autoincrement())
+  title     String?
+  createdAt DateTime           @default(now()) @map("created_at")
+  updatedAt DateTime           @updatedAt @map("updated_at")
+  turns     ConversationTurn[]
+
+  @@map("conversations")
+}
+
+model ConversationTurn {
+  id             Int          @id @default(autoincrement())
+  conversationId Int          @map("conversation_id")
+  role           String
+  content        String
+  createdAt      DateTime     @default(now()) @map("created_at")
+  conversation   Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+
+  @@map("conversation_turns")
+}
+
+model Notification {
+  id               Int      @id @default(autoincrement())
+  title            String
+  body             String
+  notificationType String   @map("notification_type")
+  isRead           Boolean  @default(false) @map("is_read")
+  actionUrl        String?  @map("action_url")
+  createdAt        DateTime @default(now()) @map("created_at")
+
+  @@map("notifications")
+}
