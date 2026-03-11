@@ -2,23 +2,19 @@ import { prisma } from "@/lib/prisma";
 import { NextRequest, NextResponse } from "next/server";
 
 export async function GET(req: NextRequest) {
-  const type = req.nextUrl.searchParams.get("relationship_type");
-  const where = type ? { relationshipType: type } : {};
-  const contacts = await prisma.contact.findMany({ where, orderBy: { updatedAt: "desc" } });
-  return NextResponse.json(
-    contacts.map((c) => ({
-      id: c.id,
-      name: c.name,
-      email: c.email,
-      phone: c.phone,
-      company: c.company,
-      relationship_type: c.relationshipType,
-      notes: c.notes,
-      last_contact_date: c.lastContactDate,
-      follow_up_frequency_days: c.followUpFrequencyDays,
-      created_at: c.createdAt,
-    }))
-  );
+  try {
+    const type = req.nextUrl.searchParams.get("relationship_type");
+    const where = type ? { relationshipType: type } : {};
+    const contacts = await prisma.contact.findMany({ where, orderBy: { updatedAt: "desc" } });
+    return NextResponse.json(
+      contacts.map((c) => ({
+        id: c.id, name: c.name, email: c.email, phone: c.phone, company: c.company,
+        relationship_type: c.relationshipType, notes: c.notes,
+        last_contact_date: c.lastContactDate,
+        follow_up_frequency_days: c.followUpFrequencyDays, created_at: c.createdAt,
+      }))
+    );
+  } catch { return NextResponse.json([]); }
 }
 
 export async function POST(req: NextRequest) {
