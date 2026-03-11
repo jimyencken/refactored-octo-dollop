@@ -1,0 +1,101 @@
+{
+  "batch": 2,
+  "source": "Splose production (acme.splose.com)",
+  "captured": "2026-03-11",
+  "context": "Client sub-pages with real data - deeper views of appointments, notes, cases, forms, and appointment detail panel",
+  "screenshots": [
+    {
+      "filename": "06-client-appointments-full.png",
+      "page": "Client > Appointments",
+      "url": "/patients/4813676/appointments",
+      "description": "Full appointments table with 14 items, color-coded status dots, Draft invoice badges, 3-dot action menus, pagination",
+      "key_elements": [
+        "sidebar with counts: Appointments 14, Communications 33, Files 23, Progress notes 28, Cases 18, Support activities, Forms 34, Invoices 6, Payments 2, Statements, Letters 1, Practitioner access",
+        "active sidebar item highlighted with purple left border",
+        "Send upcoming appointments dropdown button",
+        "+ New appointment button",
+        "columns: When (sortable), Where, Type, Practitioner, Invoice status, Actions",
+        "green dots = completed/confirmed appointments",
+        "yellow dots = upcoming/pending appointments",
+        "orange dots = past unconfirmed appointments",
+        "Draft badges in green pill with white text",
+        "3-dot action menus per row",
+        "pagination: 1-10 of 14 items, page selector, 10/page dropdown",
+        "New SMS / New email / Actions buttons in header"
+      ]
+    },
+    {
+      "filename": "07-client-progress-notes-full.png",
+      "page": "Client > Progress Notes",
+      "url": "/patients/4813676/notes",
+      "description": "Progress notes table with 28 items, Final/Draft status badges, search bar, sortable columns",
+      "key_elements": [
+        "Search bar: 'Search for content and title' with Search button",
+        "Scroll view / + New note buttons",
+        "columns: Name, Created by (with filter icon), Service date (sortable), Last update (sortable), Created at (sortable)",
+        "Final badge: green pill with white text",
+        "Draft badge: dark grey/olive pill with white text",
+        "Service date shown as clickable purple link (e.g. 'Sat 7 Feb 2026, 1:30 pm')",
+        "dates in format: '12:30 pm, 23 Feb 2026'",
+        "pagination: 1-10 of 28 items, pages 1 2 3, 10/page"
+      ]
+    },
+    {
+      "filename": "08-client-cases-full.png",
+      "page": "Client > Cases",
+      "url": "/patients/4813676/cases",
+      "description": "Cases table with 18 items showing case numbers, dates, assignees, types (Budget/Hours/Appointments), allocated vs invoiced",
+      "key_elements": [
+        "+ New case button",
+        "columns: Case Number, Issue date (sortable), Expiry date, Assignee, Type, Allocated, Invoiced",
+        "Type values: Budget (with document icon), Hours (with document icon), Appointments",
+        "Allocated/Invoiced format: '0.00 of 100.00', '3.00 of 3.00 hours', '3 of 3 appointments'",
+        "N/A shown for missing expiry dates",
+        "Indefinite case number for ongoing cases",
+        "no search bar on this page",
+        "pagination: 1-10 of 18 items"
+      ]
+    },
+    {
+      "filename": "09-appointment-detail-panel.png",
+      "page": "Client > Appointments > Detail Panel",
+      "url": "/patients/4813676/appointments (with slide-over panel)",
+      "description": "Right-side slide-over panel showing appointment details when clicking a row",
+      "key_elements": [
+        "panel header: green dot + '2:2 Consultations (2:2 Consultations)' with X close button",
+        "location icon: 'Hrishikesh Koli at East Clinics'",
+        "practitioner icon: 'Hrishikesh Koli'",
+        "clock icon: '1:30 pm, 7 Feb 2026 for 60 minutes'",
+        "person icon: 'a a' (client name)",
+        "yellow sidebar note: 'Include KM'",
+        "phone link: '+61 0123 456 789'",
+        "email link: 'rakesh.splose@gmail.com'",
+        "status: 'No status' dropdown",
+        "linked forms: 'baby due date test [Incomplete]', 'Header test [Incomplete]'",
+        "action links: Create zoom meeting, Add Invoice, Mark as Do not Invoice?",
+        "progress note link: 'AAA TEST [Final]'",
+        "Google integration: View in Google, Join with Google Meet, meet URL with copy button",
+        "Note section with empty textarea",
+        "bottom buttons: Book another, Edit, Reschedule, Archive (red outline)",
+        "View change log link"
+      ]
+    },
+    {
+      "filename": "10-client-forms.png",
+      "page": "Client > Forms",
+      "url": "/patients/4813676/forms",
+      "description": "Forms table with 34 items showing form titles, creation dates, completion status, and related appointments",
+      "key_elements": [
+        "+ New form button",
+        "Search bar: 'Search for title' with Search button",
+        "columns: Title, Created at, Completed, Related appointment, Actions",
+        "Incomplete badge: grey outline pill",
+        "Completed column shows 'No' for all visible items",
+        "Related appointment shown as purple clickable link with datetime and type",
+        "3-dot action menus per row",
+        "Files 23 shown in sidebar (active item highlighted with purple border is Forms 34)",
+        "no pagination visible (scrolled view shows ~11 items)"
+      ]
+    }
+  ]
+}
