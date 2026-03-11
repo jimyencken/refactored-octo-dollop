@@ -1,0 +1,42 @@
+{
+  "batch": 1,
+  "source": "Splose production (acme.splose.com)",
+  "captured": "2026-03-11",
+  "screenshots": [
+    {
+      "filename": "01-login.png",
+      "page": "Login",
+      "url": "/login",
+      "description": "Login page with Splose branding, email/password fields, remember me, forgot password link",
+      "key_elements": ["purple gradient header", "splose logo with hand illustration", "email field", "password field with visibility toggle", "remember me checkbox", "forgot password link", "log in button", "ToS and privacy links"]
+    },
+    {
+      "filename": "02-client-cases.png",
+      "page": "Client > Cases",
+      "url": "/patients/{id}/cases",
+      "description": "Cases table for a client showing case number, dates, assignee, type, allocated, invoiced columns",
+      "key_elements": ["top nav: Dashboard, Calendar, Clients, Contacts, Waitlist, Invoices, Payments, Reports, Products", "client sidebar: Details, Appointments, Communications, Files, Progress notes, Cases, Support activities, Forms, Invoices, Payments, Statements, Letters, Practitioner access", "New SMS / New email / Actions buttons", "+ New case button", "paginated table 10/page"]
+    },
+    {
+      "filename": "03-client-progress-notes.png",
+      "page": "Client > Progress Notes",
+      "url": "/patients/{id}/notes",
+      "description": "Progress notes list with name, created by, service date, last update, created at columns",
+      "key_elements": ["search bar", "Scroll view / + New note buttons", "Final/Draft status badges (green/grey)", "sortable columns", "pagination"]
+    },
+    {
+      "filename": "04-client-appointments.png",
+      "page": "Client > Appointments",
+      "url": "/patients/{id}/appointments",
+      "description": "Appointments table with when, where, type, practitioner, invoice status, actions columns",
+      "key_elements": ["Send upcoming appointments dropdown", "+ New appointment button", "color-coded status dots (green/yellow/orange)", "Draft invoice badges", "3-dot action menus", "pagination"]
+    },
+    {
+      "filename": "05-client-edit-details.png",
+      "page": "Client > Edit Details",
+      "url": "/patients/{id}/edit",
+      "description": "Client edit form with general details, profile photo upload, demographics",
+      "key_elements": ["Cancel/Save buttons", "Title dropdown", "First/Middle/Last name fields", "Preferred name", "DOB (Day/Month/Year dropdowns)", "Sex dropdown", "Gender identity dropdown", "Pronouns", "Occupation", "Other details textarea", "Alerts textarea", "Profile photo upload"]
+    }
+  ]
+}
