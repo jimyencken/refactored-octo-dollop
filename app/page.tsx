@@ -9,6 +9,9 @@ interface Msg { id: number; contact_id: number; subject: string | null; body: st
 interface Conv { id: number; title: string | null; created_at: string; updated_at: string; }
 interface Turn { id: number; role: string; content: string; created_at: string; }
 interface Notif { id: number; title: string; body: string; notification_type: string; is_read: boolean; action_url: string | null; created_at: string; }
+interface Suggestion { id: string; text: string; action: string; payload?: Record<string, unknown>; icon: string; priority: number; }
+interface QuickChatMessage { role: string; content: string; actions?: ChatAction[]; }
+interface ChatAction { label: string; type: "create_reminder" | "draft_message" | "lookup_contact" | "navigate"; payload: Record<string, unknown>; }
 
 // ---- API helper ----
 async function api<T>(path: string, opts: RequestInit = {}): Promise<T> {
@@ -24,11 +27,21 @@ async function api<T>(path: string, opts: RequestInit = {}): Promise<T> {
   return resp.json();
 }
 
-function esc(s: string | null | undefined): string {
-  if (!s) return "";
-  const div = document.createElement("div");
-  div.textContent = s;
-  return div.innerHTML;
+// ---- Action parser ----
+function parseAssistantActions(text: string): ChatAction[] {
+  const actions: ChatAction[] = [];
+  const lower = text.toLowerCase();
+
+  if (/remind|schedule|set.*(?:reminder|alarm|timer)/i.test(lower)) {
+    actions.push({ label: "Create Reminder", type: "create_reminder", payload: {} });
+  }
+  if (/draft|write|compose|send.*(?:message|email|text)/i.test(lower)) {
+    actions.push({ label: "Draft Message", type: "draft_message", payload: {} });
+  }
+  if (/contact|reach out|follow.?up|check in/i.test(lower)) {
+    actions.push({ label: "View Contacts", type: "lookup_contact", payload: {} });
+  }
+  return actions;
 }
 
 export default function Home() {
@@ -59,6 +72,30 @@ export default function Home() {
   const [contactFilter, setContactFilter] = useState("all");
   const [reminderFilter, setReminderFilter] = useState("");
   const [messageFilter, setMessageFilter] = useState("");
+
+  // QuickChat FAB + bottom sheet state
+  const [quickChatOpen, setQuickChatOpen] = useState(false);
+  const [quickChatMessages, setQuickChatMessages] = useState<QuickChatMessage[]>([
+    { role: "assistant", content: "Hey! Ask me anything quick." },
+  ]);
+  const [quickChatInput, setQuickChatInput] = useState("");
+  const [quickChatSending, setQuickChatSending] = useState(false);
+  const [quickChatConvId, setQuickChatConvId] = useState<number | null>(null);
+  const quickChatRef = useRef<HTMLDivElement>(null);
+  const sheetRef = useRef<HTMLDivElement>(null);
+  const fabRef = useRef<HTMLButtonElement>(null);
+
+  // Swipe gesture state
+  const touchStartY = useRef<number>(0);
+  const touchCurrentY = useRef<number>(0);
+  const isDragging = useRef(false);
+
+  // Suggestion bar state
+  const [suggestions, setSuggestions] = useState<Suggestion[]>([]);
+
+  // Voice input state
+  const [isListening, setIsListening] = useState(false);
+  const recognitionRef = useRef<SpeechRecognition | null>(null);
 
   // Theme
   useEffect(() => {
@@ -106,18 +143,55 @@ export default function Home() {
     } catch { /* ignore */ }
   }, []);
 
+  const loadSuggestions = useCallback(async () => {
+    try {
+      const data = await api<Suggestion[]>("/suggestions");
+      setSuggestions(data);
+    } catch { /* ignore */ }
+  }, []);
+
   // Init
   useEffect(() => {
     loadConvs();
     pollUnread();
+    loadSuggestions();
     const iv = setInterval(pollUnread, 30000);
-    return () => clearInterval(iv);
-  }, [loadConvs, pollUnread]);
+    const sv = setInterval(loadSuggestions, 60000);
+    return () => { clearInterval(iv); clearInterval(sv); };
+  }, [loadConvs, pollUnread, loadSuggestions]);
 
   // Scroll chat
   useEffect(() => {
     if (chatRef.current) chatRef.current.scrollTop = chatRef.current.scrollHeight;
   }, [chatMessages, sending]);
+
+  // Scroll quick chat
+  useEffect(() => {
+    if (quickChatRef.current) quickChatRef.current.scrollTop = quickChatRef.current.scrollHeight;
+  }, [quickChatMessages, quickChatSending]);
+
+  // Persist quick chat messages to sessionStorage
+  useEffect(() => {
+    if (quickChatMessages.length > 1) {
+      sessionStorage.setItem("quickChatMessages", JSON.stringify(quickChatMessages));
+      if (quickChatConvId) sessionStorage.setItem("quickChatConvId", String(quickChatConvId));
+    }
+  }, [quickChatMessages, quickChatConvId]);
+
+  // Restore quick chat from sessionStorage on mount
+  useEffect(() => {
+    try {
+      const saved = sessionStorage.getItem("quickChatMessages");
+      const savedConvId = sessionStorage.getItem("quickChatConvId");
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        if (Array.isArray(parsed) && parsed.length > 0) {
+          setQuickChatMessages(parsed);
+        }
+      }
+      if (savedConvId) setQuickChatConvId(Number(savedConvId));
+    } catch { /* ignore */ }
+  }, []);
 
   // Page switch
   const showPage = (name: string) => {
@@ -127,6 +201,7 @@ export default function Home() {
     else if (name === "messages") loadMessages(messageFilter);
     else if (name === "notifications") loadNotifications();
     else if (name === "chat") loadConvs();
+    loadSuggestions();
   };
 
   // Chat
@@ -162,6 +237,158 @@ export default function Home() {
     setChatMessages([{ role: "assistant", content: "Hello! How can I help you today?" }]);
   };
 
+  // QuickChat send
+  const sendQuickChat = async (overrideMsg?: string) => {
+    const msg = (overrideMsg || quickChatInput).trim();
+    if (!msg || quickChatSending) return;
+    setQuickChatInput("");
+    setQuickChatMessages((prev) => [...prev, { role: "user", content: msg }]);
+    setQuickChatSending(true);
+    try {
+      const resp = await api<{ conversation_id: number; reply: string }>("/chat/send", {
+        method: "POST",
+        body: JSON.stringify({ message: msg, conversation_id: quickChatConvId }),
+      });
+      setQuickChatConvId(resp.conversation_id);
+      const actions = parseAssistantActions(resp.reply);
+      setQuickChatMessages((prev) => [...prev, {
+        role: "assistant",
+        content: resp.reply,
+        actions: actions.length > 0 ? actions : undefined,
+      }]);
+      loadSuggestions();
+    } catch (e) {
+      setQuickChatMessages((prev) => [...prev, { role: "assistant", content: "Error: " + (e as Error).message }]);
+    }
+    setQuickChatSending(false);
+  };
+
+  // Quick action handlers
+  const handleQuickAction = (action: ChatAction) => {
+    setQuickChatOpen(false);
+    switch (action.type) {
+      case "create_reminder":
+        setModal("reminder");
+        break;
+      case "draft_message":
+        setModal("message");
+        break;
+      case "lookup_contact":
+        showPage("contacts");
+        break;
+      case "navigate":
+        if (action.payload.page) showPage(action.payload.page as string);
+        break;
+    }
+  };
+
+  // Suggestion handler
+  const handleSuggestion = (s: Suggestion) => {
+    if (s.action === "chat") {
+      const prefill = (s.payload?.prefill as string) || s.text;
+      setQuickChatOpen(true);
+      setTimeout(() => sendQuickChat(prefill), 100);
+    } else if (s.action === "navigate") {
+      const pg = s.payload?.page as string;
+      if (pg) {
+        showPage(pg);
+        if (s.payload?.filter) {
+          if (pg === "reminders") { setReminderFilter(s.payload.filter as string); loadReminders(s.payload.filter as string); }
+          else if (pg === "messages") { setMessageFilter(s.payload.filter as string); loadMessages(s.payload.filter as string); }
+        }
+      }
+    } else if (s.action === "create") {
+      const type = s.payload?.type as string;
+      if (type) setModal(type);
+    }
+  };
+
+  // FAB swipe gesture handlers
+  const handleFabTouchStart = (e: React.TouchEvent) => {
+    touchStartY.current = e.touches[0].clientY;
+    isDragging.current = false;
+  };
+
+  const handleFabTouchMove = (e: React.TouchEvent) => {
+    touchCurrentY.current = e.touches[0].clientY;
+    const diff = touchStartY.current - touchCurrentY.current;
+    if (diff > 20) isDragging.current = true;
+  };
+
+  const handleFabTouchEnd = () => {
+    const diff = touchStartY.current - touchCurrentY.current;
+    if (isDragging.current && diff > 50) {
+      setQuickChatOpen(true);
+    }
+    isDragging.current = false;
+  };
+
+  // Sheet swipe-to-dismiss
+  const handleSheetTouchStart = (e: React.TouchEvent) => {
+    const target = e.target as HTMLElement;
+    if (target.closest(".quickchat-input-row") || target.closest(".quickchat-history")) return;
+    touchStartY.current = e.touches[0].clientY;
+    isDragging.current = false;
+  };
+
+  const handleSheetTouchMove = (e: React.TouchEvent) => {
+    touchCurrentY.current = e.touches[0].clientY;
+    const diff = touchCurrentY.current - touchStartY.current;
+    if (diff > 20) {
+      isDragging.current = true;
+      if (sheetRef.current) {
+        sheetRef.current.style.transform = `translateY(${Math.max(0, diff)}px)`;
+        sheetRef.current.style.transition = "none";
+      }
+    }
+  };
+
+  const handleSheetTouchEnd = () => {
+    const diff = touchCurrentY.current - touchStartY.current;
+    if (sheetRef.current) {
+      sheetRef.current.style.transition = "";
+      sheetRef.current.style.transform = "";
+    }
+    if (isDragging.current && diff > 100) {
+      setQuickChatOpen(false);
+    }
+    isDragging.current = false;
+  };
+
+  // Voice input
+  const toggleVoiceInput = () => {
+    if (isListening) {
+      recognitionRef.current?.stop();
+      setIsListening(false);
+      return;
+    }
+
+    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+    if (!SpeechRecognition) return;
+
+    const recognition = new SpeechRecognition();
+    recognition.continuous = false;
+    recognition.interimResults = false;
+    recognition.lang = "en-US";
+
+    recognition.onresult = (event: SpeechRecognitionEvent) => {
+      const transcript = event.results[0][0].transcript;
+      if (quickChatOpen) {
+        setQuickChatInput(transcript);
+      } else {
+        setChatInput(transcript);
+      }
+      setIsListening(false);
+    };
+
+    recognition.onerror = () => setIsListening(false);
+    recognition.onend = () => setIsListening(false);
+
+    recognitionRef.current = recognition;
+    recognition.start();
+    setIsListening(true);
+  };
+
   // Form handlers
   const handleContactSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -172,6 +399,7 @@ export default function Home() {
     setModal(null);
     (e.target as HTMLFormElement).reset();
     loadContacts(contactFilter);
+    loadSuggestions();
   };
 
   const handleReminderSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
@@ -185,6 +413,7 @@ export default function Home() {
     setModal(null);
     (e.target as HTMLFormElement).reset();
     loadReminders(reminderFilter);
+    loadSuggestions();
   };
 
   const handleMessageSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
@@ -197,6 +426,7 @@ export default function Home() {
     setModal(null);
     (e.target as HTMLFormElement).reset();
     loadMessages(messageFilter);
+    loadSuggestions();
   };
 
   // Contact select for message modal
@@ -224,9 +454,42 @@ export default function Home() {
         </button>
       </header>
 
+      {/* AI Suggestion Bar */}
+      {suggestions.length > 0 && page !== "chat" && (
+        <div className="suggestion-bar">
+          <div className="suggestion-bar-inner">
+            {suggestions.map((s) => (
+              <button
+                key={s.id}
+                className="suggestion-chip"
+                onClick={() => handleSuggestion(s)}
+              >
+                <span className="suggestion-icon">{s.icon}</span>
+                <span className="suggestion-text">{s.text}</span>
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
+
       <div className="app-container">
         {/* Chat */}
         <div className={`page ${page === "chat" ? "active" : ""}`}>
+          {/* Suggestion chips inline on chat page */}
+          {suggestions.length > 0 && (
+            <div className="suggestion-bar-inline">
+              {suggestions.map((s) => (
+                <button
+                  key={s.id}
+                  className="suggestion-chip"
+                  onClick={() => handleSuggestion(s)}
+                >
+                  <span className="suggestion-icon">{s.icon}</span>
+                  <span className="suggestion-text">{s.text}</span>
+                </button>
+              ))}
+            </div>
+          )}
           <div className="chat-container">
             <div className="chat-sidebar">
               {convs.slice(0, 8).map((c) => (
@@ -255,6 +518,19 @@ export default function Home() {
                 placeholder="Type a message..."
                 autoComplete="off"
               />
+              <button
+                className={`mic-btn ${isListening && !quickChatOpen ? "listening" : ""}`}
+                onClick={() => { if (!quickChatOpen) toggleVoiceInput(); }}
+                aria-label="Voice input"
+                type="button"
+              >
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                  <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/>
+                  <path d="M19 10v2a7 7 0 0 1-14 0v-2"/>
+                  <line x1="12" y1="19" x2="12" y2="23"/>
+                  <line x1="8" y1="23" x2="16" y2="23"/>
+                </svg>
+              </button>
               <button onClick={sendChat}>Send</button>
             </div>
           </div>
@@ -286,7 +562,7 @@ export default function Home() {
               </div>
               {c.notes && <div className="card-body">{c.notes}</div>}
               <div className="card-actions">
-                <button className="btn btn-sm" onClick={async () => { await api(`/contacts/${c.id}/mark-contacted`, { method: "POST" }); loadContacts(contactFilter); }}>Mark Contacted</button>
+                <button className="btn btn-sm" onClick={async () => { await api(`/contacts/${c.id}/mark-contacted`, { method: "POST" }); loadContacts(contactFilter); loadSuggestions(); }}>Mark Contacted</button>
                 <button className="btn btn-sm btn-danger" onClick={async () => { if (confirm("Delete?")) { await api(`/contacts/${c.id}`, { method: "DELETE" }); loadContacts(contactFilter); } }}>Delete</button>
               </div>
             </div>
@@ -322,7 +598,7 @@ export default function Home() {
                 {(r.status === "pending" || r.status === "triggered") && (
                   <>
                     <button className="btn btn-sm" onClick={async () => { await api(`/reminders/${r.id}/snooze?minutes=15`, { method: "POST" }); loadReminders(reminderFilter); }}>Snooze 15m</button>
-                    <button className="btn btn-sm" onClick={async () => { await api(`/reminders/${r.id}/dismiss`, { method: "POST" }); loadReminders(reminderFilter); }}>Dismiss</button>
+                    <button className="btn btn-sm" onClick={async () => { await api(`/reminders/${r.id}/dismiss`, { method: "POST" }); loadReminders(reminderFilter); loadSuggestions(); }}>Dismiss</button>
                   </>
                 )}
                 <button className="btn btn-sm btn-danger" onClick={async () => { if (confirm("Delete?")) { await api(`/reminders/${r.id}`, { method: "DELETE" }); loadReminders(reminderFilter); } }}>Delete</button>
@@ -357,7 +633,7 @@ export default function Home() {
               <div className="card-body">{m.body.substring(0, 200)}{m.body.length > 200 ? "..." : ""}</div>
               <div className="card-actions">
                 {m.status === "draft" && (
-                  <button className="btn btn-sm btn-primary" onClick={async () => { await api(`/messages/${m.id}/mark-sent`, { method: "POST" }); loadMessages(messageFilter); }}>Mark Sent</button>
+                  <button className="btn btn-sm btn-primary" onClick={async () => { await api(`/messages/${m.id}/mark-sent`, { method: "POST" }); loadMessages(messageFilter); loadSuggestions(); }}>Mark Sent</button>
                 )}
                 <button className="btn btn-sm btn-danger" onClick={async () => { if (confirm("Delete?")) { await api(`/messages/${m.id}`, { method: "DELETE" }); loadMessages(messageFilter); } }}>Delete</button>
               </div>
@@ -369,7 +645,7 @@ export default function Home() {
         <div className={`page ${page === "notifications" ? "active" : ""}`}>
           <div className="section-header">
             <h2>Notifications</h2>
-            <button className="btn btn-sm" onClick={async () => { await api("/notifications/read-all", { method: "POST" }); loadNotifications(); pollUnread(); }}>Mark all read</button>
+            <button className="btn btn-sm" onClick={async () => { await api("/notifications/read-all", { method: "POST" }); loadNotifications(); pollUnread(); loadSuggestions(); }}>Mark all read</button>
           </div>
           {!notifications.length ? (
             <div className="empty-state"><p>No notifications yet.</p></div>
@@ -388,6 +664,87 @@ export default function Home() {
           ))}
         </div>
       </div>
+
+      {/* QuickChat FAB */}
+      {page !== "chat" && !quickChatOpen && (
+        <button
+          ref={fabRef}
+          className="quickchat-fab"
+          onClick={() => setQuickChatOpen(true)}
+          onTouchStart={handleFabTouchStart}
+          onTouchMove={handleFabTouchMove}
+          onTouchEnd={handleFabTouchEnd}
+          aria-label="Quick chat"
+        >
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+            <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+          </svg>
+        </button>
+      )}
+
+      {/* QuickChat Bottom Sheet */}
+      {quickChatOpen && (
+        <div className="quickchat-overlay" onClick={(e) => { if (e.target === e.currentTarget) setQuickChatOpen(false); }}>
+          <div
+            ref={sheetRef}
+            className="quickchat-sheet"
+            onTouchStart={handleSheetTouchStart}
+            onTouchMove={handleSheetTouchMove}
+            onTouchEnd={handleSheetTouchEnd}
+          >
+            <div className="quickchat-handle" />
+            <div className="quickchat-header">
+              <h3>Quick Chat</h3>
+              <button className="modal-close" onClick={() => setQuickChatOpen(false)}>&times;</button>
+            </div>
+            <div className="quickchat-history" ref={quickChatRef}>
+              {quickChatMessages.map((m, i) => (
+                <div key={i}>
+                  <div className={`chat-bubble ${m.role}`}>{m.content}</div>
+                  {m.actions && m.actions.length > 0 && (
+                    <div className="chat-actions">
+                      {m.actions.map((a, j) => (
+                        <button key={j} className="chat-action-btn" onClick={() => handleQuickAction(a)}>
+                          {a.label}
+                        </button>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              ))}
+              {quickChatSending && (
+                <div className="chat-bubble assistant">
+                  <div className="typing-dots"><span /><span /><span /></div>
+                </div>
+              )}
+            </div>
+            <div className="quickchat-input-row">
+              <input
+                value={quickChatInput}
+                onChange={(e) => setQuickChatInput(e.target.value)}
+                onKeyDown={(e) => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); sendQuickChat(); } }}
+                placeholder="Ask anything..."
+                autoComplete="off"
+                autoFocus
+              />
+              <button
+                className={`mic-btn ${isListening && quickChatOpen ? "listening" : ""}`}
+                onClick={() => { if (quickChatOpen) toggleVoiceInput(); }}
+                aria-label="Voice input"
+                type="button"
+              >
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                  <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/>
+                  <path d="M19 10v2a7 7 0 0 1-14 0v-2"/>
+                  <line x1="12" y1="19" x2="12" y2="23"/>
+                  <line x1="8" y1="23" x2="16" y2="23"/>
+                </svg>
+              </button>
+              <button onClick={() => sendQuickChat()}>Send</button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Bottom Nav */}
       <nav className="bottom-nav">
