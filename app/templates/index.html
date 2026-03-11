@@ -2,19 +2,26 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, user-scalable=no">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <meta name="theme-color" content="#2563eb">
+    <meta name="theme-color" content="#2563eb" id="meta-theme">
     <title>Productivity Assistant</title>
     <link rel="stylesheet" href="/static/css/style.css">
     <link rel="manifest" href="/static/manifest.json">
+    <link rel="apple-touch-icon" href="/static/icon-192.png">
 </head>
 <body>
 
 <header class="app-header">
-    <h1>Productivity Assistant</h1>
-    <div class="subtitle" id="header-subtitle">Your proactive personal assistant</div>
+    <div class="app-header-left">
+        <h1>Productivity Assistant</h1>
+        <div class="subtitle" id="header-subtitle"><span class="status-dot online"></span> Ready</div>
+    </div>
+    <button class="theme-toggle" onclick="toggleTheme()" aria-label="Toggle dark mode">
+        <svg id="theme-icon-light" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="display:none"><circle cx="12" cy="12" r="5"/><path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/></svg>
+        <svg id="theme-icon-dark" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+    </button>
 </header>
 
 <div class="app-container">
@@ -36,8 +43,8 @@
 
     <!-- Contacts Page -->
     <div class="page" id="page-contacts">
-        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px">
-            <h2 style="font-size:17px">Contacts</h2>
+        <div class="section-header">
+            <h2>Contacts</h2>
             <button class="btn btn-primary btn-sm" onclick="openModal('contact-modal')">+ Add</button>
         </div>
         <div class="tabs">
@@ -51,8 +58,8 @@
 
     <!-- Reminders Page -->
     <div class="page" id="page-reminders">
-        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px">
-            <h2 style="font-size:17px">Reminders</h2>
+        <div class="section-header">
+            <h2>Reminders</h2>
             <button class="btn btn-primary btn-sm" onclick="openModal('reminder-modal')">+ Add</button>
         </div>
         <div class="tabs">
@@ -65,8 +72,8 @@
 
     <!-- Messages Page -->
     <div class="page" id="page-messages">
-        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px">
-            <h2 style="font-size:17px">Messages</h2>
+        <div class="section-header">
+            <h2>Messages</h2>
             <button class="btn btn-primary btn-sm" onclick="openModal('message-modal')">+ Draft</button>
         </div>
         <div class="tabs">
@@ -79,8 +86,8 @@
 
     <!-- Notifications Page -->
     <div class="page" id="page-notifications">
-        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px">
-            <h2 style="font-size:17px">Notifications</h2>
+        <div class="section-header">
+            <h2>Notifications</h2>
             <button class="btn btn-sm" onclick="markAllRead()">Mark all read</button>
         </div>
         <div id="notifications-list"></div>
@@ -113,17 +120,18 @@
 </nav>
 
 <!-- Contact Modal -->
-<div class="modal-overlay" id="contact-modal">
+<div class="modal-overlay" id="contact-modal" onclick="if(event.target===this)closeModal('contact-modal')">
     <div class="modal-content">
+        <div class="modal-handle"></div>
         <div class="modal-header">
             <h2>Add Contact</h2>
             <button class="modal-close" onclick="closeModal('contact-modal')">&times;</button>
         </div>
         <form onsubmit="return createContact(event)">
-            <div class="form-group"><label>Name *</label><input name="name" required></div>
-            <div class="form-group"><label>Email</label><input name="email" type="email"></div>
-            <div class="form-group"><label>Phone</label><input name="phone"></div>
-            <div class="form-group"><label>Company</label><input name="company"></div>
+            <div class="form-group"><label>Name</label><input name="name" required placeholder="Full name"></div>
+            <div class="form-group"><label>Email</label><input name="email" type="email" placeholder="email@example.com"></div>
+            <div class="form-group"><label>Phone</label><input name="phone" type="tel" placeholder="+1 (555) 000-0000"></div>
+            <div class="form-group"><label>Company</label><input name="company" placeholder="Company name"></div>
             <div class="form-group">
                 <label>Relationship</label>
                 <select name="relationship_type">
@@ -133,24 +141,25 @@
                     <option value="acquaintance">Acquaintance</option>
                 </select>
             </div>
-            <div class="form-group"><label>Follow-up every (days)</label><input name="follow_up_frequency_days" type="number" min="1"></div>
-            <div class="form-group"><label>Notes</label><textarea name="notes"></textarea></div>
+            <div class="form-group"><label>Follow-up every (days)</label><input name="follow_up_frequency_days" type="number" min="1" placeholder="e.g. 7"></div>
+            <div class="form-group"><label>Notes</label><textarea name="notes" placeholder="Add any notes..."></textarea></div>
             <button type="submit" class="btn btn-primary btn-block">Save Contact</button>
         </form>
     </div>
 </div>
 
 <!-- Reminder Modal -->
-<div class="modal-overlay" id="reminder-modal">
+<div class="modal-overlay" id="reminder-modal" onclick="if(event.target===this)closeModal('reminder-modal')">
     <div class="modal-content">
+        <div class="modal-handle"></div>
         <div class="modal-header">
             <h2>Add Reminder</h2>
             <button class="modal-close" onclick="closeModal('reminder-modal')">&times;</button>
         </div>
         <form onsubmit="return createReminder(event)">
-            <div class="form-group"><label>Title *</label><input name="title" required></div>
-            <div class="form-group"><label>Description</label><textarea name="description"></textarea></div>
-            <div class="form-group"><label>Due Date & Time *</label><input name="due_at" type="datetime-local" required></div>
+            <div class="form-group"><label>Title</label><input name="title" required placeholder="What to remember..."></div>
+            <div class="form-group"><label>Description</label><textarea name="description" placeholder="Details (optional)"></textarea></div>
+            <div class="form-group"><label>Due Date & Time</label><input name="due_at" type="datetime-local" required></div>
             <div class="form-group">
                 <label>Recurrence</label>
                 <select name="recurrence_rule">
@@ -166,18 +175,19 @@
 </div>
 
 <!-- Message Modal -->
-<div class="modal-overlay" id="message-modal">
+<div class="modal-overlay" id="message-modal" onclick="if(event.target===this)closeModal('message-modal')">
     <div class="modal-content">
+        <div class="modal-handle"></div>
         <div class="modal-header">
             <h2>Draft Message</h2>
             <button class="modal-close" onclick="closeModal('message-modal')">&times;</button>
         </div>
         <form onsubmit="return createMessage(event)">
             <div class="form-group">
-                <label>Contact *</label>
+                <label>Contact</label>
                 <select name="contact_id" id="msg-contact-select" required></select>
             </div>
-            <div class="form-group"><label>Subject</label><input name="subject"></div>
+            <div class="form-group"><label>Subject</label><input name="subject" placeholder="Message subject"></div>
             <div class="form-group">
                 <label>Channel</label>
                 <select name="channel">
@@ -186,7 +196,7 @@
                     <option value="chat">Chat</option>
                 </select>
             </div>
-            <div class="form-group"><label>Message *</label><textarea name="body" required rows="5"></textarea></div>
+            <div class="form-group"><label>Message</label><textarea name="body" required rows="5" placeholder="Write your message..."></textarea></div>
             <div style="display:flex;gap:8px">
                 <button type="submit" class="btn btn-primary" style="flex:1">Save Draft</button>
                 <button type="button" class="btn" style="flex:1" onclick="aiDraft()">AI Draft</button>

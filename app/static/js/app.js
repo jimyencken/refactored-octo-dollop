@@ -2,6 +2,31 @@
 let currentConversationId = null;
 let notifPollInterval = null;
 
+// --- Theme ---
+function getPreferredTheme() {
+    const saved = localStorage.getItem('theme');
+    if (saved) return saved;
+    return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+}
+
+function applyTheme(theme) {
+    document.body.classList.add('theme-transitioning');
+    document.documentElement.setAttribute('data-theme', theme);
+    localStorage.setItem('theme', theme);
+    // Update icons
+    document.getElementById('theme-icon-light').style.display = theme === 'dark' ? 'block' : 'none';
+    document.getElementById('theme-icon-dark').style.display = theme === 'dark' ? 'none' : 'block';
+    // Update meta theme color
+    const meta = document.getElementById('meta-theme');
+    if (meta) meta.content = theme === 'dark' ? '#0f172a' : '#2563eb';
+    setTimeout(() => document.body.classList.remove('theme-transitioning'), 350);
+}
+
+function toggleTheme() {
+    const current = document.documentElement.getAttribute('data-theme') || getPreferredTheme();
+    applyTheme(current === 'dark' ? 'light' : 'dark');
+}
+
 // --- Navigation ---
 function showPage(name) {
     document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
@@ -214,15 +239,14 @@ async function loadConversations() {
     const convs = await api('/chat/conversations');
     const sidebar = document.getElementById('chat-sidebar');
     if (!convs.length) {
-        sidebar.innerHTML = '<div style="font-size:13px;color:var(--text-secondary);padding:8px">New conversation started</div>';
+        sidebar.innerHTML = '<div class="chat-sidebar-item active" onclick="newConversation()">+ New chat</div>';
         return;
     }
     sidebar.innerHTML = convs.slice(0, 8).map(c => `
         <div class="chat-sidebar-item ${c.id === currentConversationId ? 'active' : ''}" onclick="loadConversation(${c.id})">
-            <span>${esc((c.title || 'Untitled').substring(0, 40))}</span>
-            <span style="font-size:11px;color:var(--text-secondary)">${new Date(c.updated_at).toLocaleDateString()}</span>
+            ${esc((c.title || 'Untitled').substring(0, 30))}
         </div>
-    `).join('') + '<div class="chat-sidebar-item" onclick="newConversation()" style="color:var(--primary)">+ New conversation</div>';
+    `).join('') + '<div class="chat-sidebar-item" onclick="newConversation()">+ New</div>';
 }
 
 async function loadConversation(id) {
@@ -239,7 +263,7 @@ async function loadConversation(id) {
 function newConversation() {
     currentConversationId = null;
     document.getElementById('chat-history').innerHTML = `
-        <div class="chat-bubble assistant">Hello! I'm your productivity assistant. How can I help?</div>
+        <div class="chat-bubble assistant">Hello! How can I help you today?</div>
     `;
     loadConversations();
 }
@@ -252,7 +276,7 @@ async function sendChat() {
 
     const history = document.getElementById('chat-history');
     history.innerHTML += `<div class="chat-bubble user">${esc(msg)}</div>`;
-    history.innerHTML += `<div class="chat-bubble assistant" id="typing" style="opacity:0.5">Thinking...</div>`;
+    history.innerHTML += `<div class="chat-bubble assistant" id="typing"><div class="typing-dots"><span></span><span></span><span></span></div></div>`;
     history.scrollTop = history.scrollHeight;
 
     try {
@@ -268,7 +292,7 @@ async function sendChat() {
         loadConversations();
     } catch (e) {
         const typing = document.getElementById('typing');
-        if (typing) { typing.textContent = 'Error: ' + e.message; typing.style.opacity = '1'; }
+        if (typing) { typing.innerHTML = 'Error: ' + esc(e.message); }
     }
 }
 
@@ -361,6 +385,7 @@ function esc(s) {
 
 // --- Init ---
 document.addEventListener('DOMContentLoaded', () => {
+    applyTheme(getPreferredTheme());
     loadConversations();
     pollNotifications();
     notifPollInterval = setInterval(pollNotifications, 30000);
