@@ -1,0 +1,8 @@
+[project]
+name = "productivity-assistant"
+version = "1.0.0"
+description = "Proactive personal productivity assistant with scheduling, reminders, message drafting, and persistent conversational chat"
+requires-python = ">=3.11"
+
+[tool.ruff]
+line-length = 100
