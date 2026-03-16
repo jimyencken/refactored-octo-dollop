@@ -4,6 +4,11 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { Badge } from "../components/Badge";
 import type { BadgeVariant } from "../components/Badge/Badge";
 
+const BADGE_VARIANTS: Set<string> = new Set(["final", "draft", "incomplete", "pending"]);
+function toBadgeVariant(status: string, fallback: BadgeVariant = "draft"): BadgeVariant {
+  return BADGE_VARIANTS.has(status) ? (status as BadgeVariant) : fallback;
+}
+
 // ---- Types ----
 interface Contact { id: number; name: string; email: string | null; phone: string | null; company: string | null; relationship_type: string; notes: string | null; last_contact_date: string | null; follow_up_frequency_days: number | null; created_at: string; }
 interface Reminder { id: number; title: string; description: string | null; due_at: string; recurrence_rule: string | null; status: string; contact_id: number | null; created_at: string; }
@@ -26,12 +31,6 @@ async function api<T>(path: string, opts: RequestInit = {}): Promise<T> {
   return resp.json();
 }
 
-function esc(s: string | null | undefined): string {
-  if (!s) return "";
-  const div = document.createElement("div");
-  div.textContent = s;
-  return div.innerHTML;
-}
 
 export default function Home() {
   const [page, setPage] = useState("chat");
@@ -170,10 +169,12 @@ export default function Home() {
     const fd = new FormData(e.currentTarget);
     const data: Record<string, unknown> = {};
     fd.forEach((v, k) => { if (v) data[k] = k === "follow_up_frequency_days" ? Number(v) : v; });
-    await api("/contacts", { method: "POST", body: JSON.stringify(data) });
-    setModal(null);
-    (e.target as HTMLFormElement).reset();
-    loadContacts(contactFilter);
+    try {
+      await api("/contacts", { method: "POST", body: JSON.stringify(data) });
+      setModal(null);
+      (e.target as HTMLFormElement).reset();
+      loadContacts(contactFilter);
+    } catch (err) { alert("Failed to save contact: " + (err as Error).message); }
   };
 
   const handleReminderSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
@@ -183,10 +184,12 @@ export default function Home() {
     fd.forEach((v, k) => { if (v) data[k] = v; });
     if (data.due_at) data.due_at = new Date(data.due_at as string).toISOString();
     if (!data.recurrence_rule) delete data.recurrence_rule;
-    await api("/reminders", { method: "POST", body: JSON.stringify(data) });
-    setModal(null);
-    (e.target as HTMLFormElement).reset();
-    loadReminders(reminderFilter);
+    try {
+      await api("/reminders", { method: "POST", body: JSON.stringify(data) });
+      setModal(null);
+      (e.target as HTMLFormElement).reset();
+      loadReminders(reminderFilter);
+    } catch (err) { alert("Failed to save reminder: " + (err as Error).message); }
   };
 
   const handleMessageSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
@@ -195,10 +198,12 @@ export default function Home() {
     const data: Record<string, unknown> = {};
     fd.forEach((v, k) => { if (v) data[k] = v; });
     data.contact_id = Number(data.contact_id);
-    await api("/messages", { method: "POST", body: JSON.stringify(data) });
-    setModal(null);
-    (e.target as HTMLFormElement).reset();
-    loadMessages(messageFilter);
+    try {
+      await api("/messages", { method: "POST", body: JSON.stringify(data) });
+      setModal(null);
+      (e.target as HTMLFormElement).reset();
+      loadMessages(messageFilter);
+    } catch (err) { alert("Failed to save message: " + (err as Error).message); }
   };
 
   // Contact select for message modal
@@ -315,7 +320,7 @@ export default function Home() {
             <div key={r.id} className="card">
               <div className="card-title">{r.title}</div>
               <div className="card-meta">
-                <Badge variant={r.status === "triggered" ? "incomplete" : r.status as BadgeVariant} label={r.status} />
+                <Badge variant={r.status === "triggered" ? "incomplete" : toBadgeVariant(r.status)} label={r.status} />
                 {" "}&middot; Due: {new Date(r.due_at).toLocaleString()}
                 {r.recurrence_rule && <> &middot; Repeats {r.recurrence_rule}</>}
               </div>
@@ -353,7 +358,7 @@ export default function Home() {
             <div key={m.id} className="card">
               <div className="card-title">{m.subject || "(No subject)"}</div>
               <div className="card-meta">
-                <Badge variant={m.status === "sent" ? "final" : m.status as BadgeVariant} label={m.status} />
+                <Badge variant={m.status === "sent" ? "final" : toBadgeVariant(m.status)} label={m.status} />
                 {" "}&middot; {m.channel} &middot; {new Date(m.created_at).toLocaleDateString()}
               </div>
               <div className="card-body">{m.body.substring(0, 200)}{m.body.length > 200 ? "..." : ""}</div>

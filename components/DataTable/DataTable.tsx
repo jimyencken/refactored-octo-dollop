@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useMemo, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import styles from "./DataTable.module.css";
 
 export type SortDirection = "asc" | "desc" | null;
@@ -48,6 +48,9 @@ export function DataTable<T extends Record<string, unknown>>({
   const [sortKey, setSortKey] = useState<string | null>(null);
   const [sortDir, setSortDir] = useState<SortDirection>(null);
   const [currentPage, setCurrentPage] = useState(0);
+
+  // Reset page when data changes
+  useEffect(() => { setCurrentPage(0); }, [data.length, pageSize]);
 
   const handleSort = (key: string) => {
     if (sortKey === key) {

@@ -32,6 +32,7 @@ function ensureDatabase() {
         });
       } catch (e) {
         console.error("Failed to push schema:", (e as Error).message);
+        return; // Don't mark as initialized if schema push failed
       }
     }
   }
