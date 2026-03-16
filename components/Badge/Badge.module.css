@@ -1,0 +1,55 @@
+.badge {
+  display: inline-block;
+  padding: 2px 8px;
+  border-radius: 10px;
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  line-height: 1.5;
+  white-space: nowrap;
+}
+
+/* Final / green (mirrors .badge-sent) */
+.final {
+  background: #d1fae5;
+  color: #065f46;
+}
+
+/* Draft / indigo-outline (mirrors .badge-draft) */
+.draft {
+  background: #e0e7ff;
+  color: #3730a3;
+}
+
+/* Incomplete / red (mirrors .badge-triggered) */
+.incomplete {
+  background: #fee2e2;
+  color: #991b1b;
+}
+
+/* Pending / amber (mirrors .badge-pending) */
+.pending {
+  background: #fef3c7;
+  color: #92400e;
+}
+
+/* Dark theme overrides */
+:global([data-theme="dark"]) .final {
+  background: #064e3b;
+  color: #d1fae5;
+}
+
+:global([data-theme="dark"]) .draft {
+  background: #312e81;
+  color: #e0e7ff;
+}
+
+:global([data-theme="dark"]) .incomplete {
+  background: #7f1d1d;
+  color: #fee2e2;
+}
+
+:global([data-theme="dark"]) .pending {
+  background: #78350f;
+  color: #fef3c7;
+}

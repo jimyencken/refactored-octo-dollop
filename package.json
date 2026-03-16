@@ -8,7 +8,11 @@
     "start": "next start",
     "postinstall": "prisma generate",
     "db:push": "prisma db push",
-    "db:studio": "prisma studio"
+    "db:studio": "prisma studio",
+    "storybook": "storybook dev -p 6006",
+    "build-storybook": "storybook build",
+    "screenshots:capture": "node scripts/capture-prototype.js",
+    "screenshots:compare": "node scripts/compare-screenshots.js"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.39.0",
@@ -21,8 +25,16 @@
     "@types/node": "^22.0.0",
     "@types/react": "^19.0.0",
     "@types/react-dom": "^19.0.0",
+    "@storybook/addon-a11y": "^8.6.0",
+    "@storybook/addon-essentials": "^8.6.0",
+    "@storybook/addon-interactions": "^8.6.0",
+    "@storybook/nextjs": "^8.6.0",
+    "@storybook/react": "^8.6.0",
+    "pixelmatch": "^7.1.0",
     "playwright": "^1.58.2",
+    "pngjs": "^7.0.0",
     "prisma": "^6.3.0",
+    "storybook": "^8.6.0",
     "typescript": "^5.7.0"
   }
 }

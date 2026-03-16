@@ -1,0 +1,8 @@
+{
+  "hooks": {
+    "session-start": {
+      "command": "bash .claude/hooks/session-start.sh",
+      "description": "Auto-onboard: install deps, setup DB, show project status"
+    }
+  }
+}
