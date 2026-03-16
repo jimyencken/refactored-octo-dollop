@@ -1,6 +1,8 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
+import { Badge } from "../components/Badge";
+import type { BadgeVariant } from "../components/Badge/Badge";
 
 // ---- Types ----
 interface Contact { id: number; name: string; email: string | null; phone: string | null; company: string | null; relationship_type: string; notes: string | null; last_contact_date: string | null; follow_up_frequency_days: number | null; created_at: string; }
@@ -280,7 +282,7 @@ export default function Home() {
             <div key={c.id} className="card">
               <div className="card-title">{c.name}</div>
               <div className="card-meta">
-                <span className={`badge badge-${c.relationship_type === "business" ? "draft" : "sent"}`}>{c.relationship_type}</span>
+                <Badge variant={c.relationship_type === "business" ? "draft" : "final"} label={c.relationship_type} />
                 {c.company && <> &middot; {c.company}</>}
                 {c.email && <> &middot; {c.email}</>}
               </div>
@@ -313,7 +315,7 @@ export default function Home() {
             <div key={r.id} className="card">
               <div className="card-title">{r.title}</div>
               <div className="card-meta">
-                <span className={`badge badge-${r.status}`}>{r.status}</span>
+                <Badge variant={r.status === "triggered" ? "incomplete" : r.status as BadgeVariant} label={r.status} />
                 {" "}&middot; Due: {new Date(r.due_at).toLocaleString()}
                 {r.recurrence_rule && <> &middot; Repeats {r.recurrence_rule}</>}
               </div>
@@ -351,7 +353,7 @@ export default function Home() {
             <div key={m.id} className="card">
               <div className="card-title">{m.subject || "(No subject)"}</div>
               <div className="card-meta">
-                <span className={`badge badge-${m.status}`}>{m.status}</span>
+                <Badge variant={m.status === "sent" ? "final" : m.status as BadgeVariant} label={m.status} />
                 {" "}&middot; {m.channel} &middot; {new Date(m.created_at).toLocaleDateString()}
               </div>
               <div className="card-body">{m.body.substring(0, 200)}{m.body.length > 200 ? "..." : ""}</div>

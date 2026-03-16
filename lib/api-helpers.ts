@@ -1,10 +1,19 @@
 import { NextResponse } from "next/server";
+import { seedIfEmpty } from "./prisma";
+
+let seeded = false;
 
 export async function withDb<T>(
   fn: () => Promise<T>,
   fallback?: T
 ): Promise<NextResponse> {
   try {
+    // Auto-seed on first API request
+    if (!seeded) {
+      seeded = true;
+      await seedIfEmpty();
+    }
+
     const result = await fn();
     return NextResponse.json(result);
   } catch (e) {
@@ -13,7 +22,7 @@ export async function withDb<T>(
       return NextResponse.json(fallback);
     }
     return NextResponse.json(
-      { error: "Database unavailable. Add a hosted database (e.g. Vercel Postgres) for persistence." },
+      { error: "Database unavailable" },
       { status: 503 }
     );
   }
