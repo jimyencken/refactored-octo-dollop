@@ -1,0 +1,268 @@
+{
+  "generated_at": "2026-03-16T12:35:26.844Z",
+  "refs_dir": "/home/user/refactored-octo-dollop/references/screenshots",
+  "total_screenshots": 10,
+  "compared": 0,
+  "skipped": 10,
+  "results": [
+    {
+      "reference": "batch-01/01-login.png",
+      "generated": "generated/01-login.png",
+      "reference_exists": false,
+      "generated_exists": false,
+      "pixel_diff_percent": null,
+      "mismatched_pixels": null,
+      "total_pixels": null,
+      "diff_image": null,
+      "status": "skipped",
+      "priority": "low",
+      "key_elements_to_review": [
+        "purple gradient header",
+        "splose logo with hand illustration",
+        "email field",
+        "password field with visibility toggle",
+        "remember me checkbox",
+        "forgot password link",
+        "log in button",
+        "ToS and privacy links"
+      ],
+      "notes": [
+        "Reference PNG not found"
+      ]
+    },
+    {
+      "reference": "batch-01/02-client-cases.png",
+      "generated": "generated/02-client-cases.png",
+      "reference_exists": false,
+      "generated_exists": false,
+      "pixel_diff_percent": null,
+      "mismatched_pixels": null,
+      "total_pixels": null,
+      "diff_image": null,
+      "status": "skipped",
+      "priority": "low",
+      "key_elements_to_review": [
+        "top nav: Dashboard, Calendar, Clients, Contacts, Waitlist, Invoices, Payments, Reports, Products",
+        "client sidebar: Details, Appointments, Communications, Files, Progress notes, Cases, Support activities, Forms, Invoices, Payments, Statements, Letters, Practitioner access",
+        "New SMS / New email / Actions buttons",
+        "+ New case button",
+        "paginated table 10/page"
+      ],
+      "notes": [
+        "Reference PNG not found"
+      ]
+    },
+    {
+      "reference": "batch-01/03-client-progress-notes.png",
+      "generated": "generated/03-client-progress-notes.png",
+      "reference_exists": false,
+      "generated_exists": false,
+      "pixel_diff_percent": null,
+      "mismatched_pixels": null,
+      "total_pixels": null,
+      "diff_image": null,
+      "status": "skipped",
+      "priority": "low",
+      "key_elements_to_review": [
+        "search bar",
+        "Scroll view / + New note buttons",
+        "Final/Draft status badges (green/grey)",
+        "sortable columns",
+        "pagination"
+      ],
+      "notes": [
+        "Reference PNG not found"
+      ]
+    },
+    {
+      "reference": "batch-01/04-client-appointments.png",
+      "generated": "generated/04-client-appointments.png",
+      "reference_exists": false,
+      "generated_exists": false,
+      "pixel_diff_percent": null,
+      "mismatched_pixels": null,
+      "total_pixels": null,
+      "diff_image": null,
+      "status": "skipped",
+      "priority": "low",
+      "key_elements_to_review": [
+        "Send upcoming appointments dropdown",
+        "+ New appointment button",
+        "color-coded status dots (green/yellow/orange)",
+        "Draft invoice badges",
+        "3-dot action menus",
+        "pagination"
+      ],
+      "notes": [
+        "Reference PNG not found"
+      ]
+    },
+    {
+      "reference": "batch-01/05-client-edit-details.png",
+      "generated": "generated/05-client-edit-details.png",
+      "reference_exists": false,
+      "generated_exists": false,
+      "pixel_diff_percent": null,
+      "mismatched_pixels": null,
+      "total_pixels": null,
+      "diff_image": null,
+      "status": "skipped",
+      "priority": "low",
+      "key_elements_to_review": [
+        "Cancel/Save buttons",
+        "Title dropdown",
+        "First/Middle/Last name fields",
+        "Preferred name",
+        "DOB (Day/Month/Year dropdowns)",
+        "Sex dropdown",
+        "Gender identity dropdown",
+        "Pronouns",
+        "Occupation",
+        "Other details textarea",
+        "Alerts textarea",
+        "Profile photo upload"
+      ],
+      "notes": [
+        "Reference PNG not found"
+      ]
+    },
+    {
+      "reference": "batch-02/06-client-appointments-full.png",
+      "generated": "generated/06-client-appointments-full.png",
+      "reference_exists": false,
+      "generated_exists": false,
+      "pixel_diff_percent": null,
+      "mismatched_pixels": null,
+      "total_pixels": null,
+      "diff_image": null,
+      "status": "skipped",
+      "priority": "low",
+      "key_elements_to_review": [
+        "sidebar with counts: Appointments 14, Communications 33, Files 23, Progress notes 28, Cases 18, Support activities, Forms 34, Invoices 6, Payments 2, Statements, Letters 1, Practitioner access",
+        "active sidebar item highlighted with purple left border",
+        "Send upcoming appointments dropdown button",
+        "+ New appointment button",
+        "columns: When (sortable), Where, Type, Practitioner, Invoice status, Actions",
+        "green dots = completed/confirmed appointments",
+        "yellow dots = upcoming/pending appointments",
+        "orange dots = past unconfirmed appointments",
+        "Draft badges in green pill with white text",
+        "3-dot action menus per row",
+        "pagination: 1-10 of 14 items, page selector, 10/page dropdown",
+        "New SMS / New email / Actions buttons in header"
+      ],
+      "notes": [
+        "Reference PNG not found"
+      ]
+    },
+    {
+      "reference": "batch-02/07-client-progress-notes-full.png",
+      "generated": "generated/07-client-progress-notes-full.png",
+      "reference_exists": false,
+      "generated_exists": false,
+      "pixel_diff_percent": null,
+      "mismatched_pixels": null,
+      "total_pixels": null,
+      "diff_image": null,
+      "status": "skipped",
+      "priority": "low",
+      "key_elements_to_review": [
+        "Search bar: 'Search for content and title' with Search button",
+        "Scroll view / + New note buttons",
+        "columns: Name, Created by (with filter icon), Service date (sortable), Last update (sortable), Created at (sortable)",
+        "Final badge: green pill with white text",
+        "Draft badge: dark grey/olive pill with white text",
+        "Service date shown as clickable purple link (e.g. 'Sat 7 Feb 2026, 1:30 pm')",
+        "dates in format: '12:30 pm, 23 Feb 2026'",
+        "pagination: 1-10 of 28 items, pages 1 2 3, 10/page"
+      ],
+      "notes": [
+        "Reference PNG not found"
+      ]
+    },
+    {
+      "reference": "batch-02/08-client-cases-full.png",
+      "generated": "generated/08-client-cases-full.png",
+      "reference_exists": false,
+      "generated_exists": false,
+      "pixel_diff_percent": null,
+      "mismatched_pixels": null,
+      "total_pixels": null,
+      "diff_image": null,
+      "status": "skipped",
+      "priority": "low",
+      "key_elements_to_review": [
+        "+ New case button",
+        "columns: Case Number, Issue date (sortable), Expiry date, Assignee, Type, Allocated, Invoiced",
+        "Type values: Budget (with document icon), Hours (with document icon), Appointments",
+        "Allocated/Invoiced format: '0.00 of 100.00', '3.00 of 3.00 hours', '3 of 3 appointments'",
+        "N/A shown for missing expiry dates",
+        "Indefinite case number for ongoing cases",
+        "no search bar on this page",
+        "pagination: 1-10 of 18 items"
+      ],
+      "notes": [
+        "Reference PNG not found"
+      ]
+    },
+    {
+      "reference": "batch-02/09-appointment-detail-panel.png",
+      "generated": "generated/09-appointment-detail-panel.png",
+      "reference_exists": false,
+      "generated_exists": false,
+      "pixel_diff_percent": null,
+      "mismatched_pixels": null,
+      "total_pixels": null,
+      "diff_image": null,
+      "status": "skipped",
+      "priority": "low",
+      "key_elements_to_review": [
+        "panel header: green dot + '2:2 Consultations (2:2 Consultations)' with X close button",
+        "location icon: 'Hrishikesh Koli at East Clinics'",
+        "practitioner icon: 'Hrishikesh Koli'",
+        "clock icon: '1:30 pm, 7 Feb 2026 for 60 minutes'",
+        "person icon: 'a a' (client name)",
+        "yellow sidebar note: 'Include KM'",
+        "phone link: '+61 0123 456 789'",
+        "email link: 'rakesh.splose@gmail.com'",
+        "status: 'No status' dropdown",
+        "linked forms: 'baby due date test [Incomplete]', 'Header test [Incomplete]'",
+        "action links: Create zoom meeting, Add Invoice, Mark as Do not Invoice?",
+        "progress note link: 'AAA TEST [Final]'",
+        "Google integration: View in Google, Join with Google Meet, meet URL with copy button",
+        "Note section with empty textarea",
+        "bottom buttons: Book another, Edit, Reschedule, Archive (red outline)",
+        "View change log link"
+      ],
+      "notes": [
+        "Reference PNG not found"
+      ]
+    },
+    {
+      "reference": "batch-02/10-client-forms.png",
+      "generated": "generated/10-client-forms.png",
+      "reference_exists": false,
+      "generated_exists": false,
+      "pixel_diff_percent": null,
+      "mismatched_pixels": null,
+      "total_pixels": null,
+      "diff_image": null,
+      "status": "skipped",
+      "priority": "low",
+      "key_elements_to_review": [
+        "+ New form button",
+        "Search bar: 'Search for title' with Search button",
+        "columns: Title, Created at, Completed, Related appointment, Actions",
+        "Incomplete badge: grey outline pill",
+        "Completed column shows 'No' for all visible items",
+        "Related appointment shown as purple clickable link with datetime and type",
+        "3-dot action menus per row",
+        "Files 23 shown in sidebar (active item highlighted with purple border is Forms 34)",
+        "no pagination visible (scrolled view shows ~11 items)"
+      ],
+      "notes": [
+        "Reference PNG not found"
+      ]
+    }
+  ]
+}
